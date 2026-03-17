@@ -30,3 +30,31 @@ class ProductRepository:
 
     def get_by_id(self, product_id: int) -> Product | None:
         return self.session.get(Product, product_id)
+
+    def get_all(
+        self,
+        min_price: int | None = None,
+        max_price: int | None = None,
+        in_stock: bool | None = None,
+    ) -> list[Product]:
+        query = select(Product)
+        if min_price is not None:
+            query = query.where(Product.price >= min_price)
+        if max_price is not None:
+            query = query.where(Product.price <= max_price)
+        if in_stock is not None:
+            query = query.where(Product.in_stock == in_stock)
+        return list(self.session.exec(query).all())
+
+    def update(self, product: Product, updated_data: ProductUpdate) -> Product:
+        product.name = updated_data.name
+        product.price = updated_data.price
+        product.in_stock = updated_data.in_stock
+        self.session.add(product)
+        self.session.commit()
+        self.session.refresh(product)
+        return product
+
+    def delete(self, product: Product) -> None:
+        self.session.delete(product)
+        self.session.commit()

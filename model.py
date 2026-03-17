@@ -30,3 +30,12 @@ class ProductUpdate(SQLModel):
     @classmethod
     def validate_name(cls, name: str) -> str:
         return strip_and_validate_name(name)
+
+
+class Product(ProductCreate, table=True):
+    __tablename__ = "products"
+    id: int | None = Field(default=None, primary_key=True)
+
+
+class ProductOut(ProductCreate):
+    id: int

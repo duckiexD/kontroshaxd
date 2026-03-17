@@ -15,3 +15,18 @@ def get_session() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     SQLModel.metadata.create_all(engine)
+
+
+class ProductRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def create(self, product_data: ProductCreate) -> Product:
+        new_product = Product(**product_data.model_dump())
+        self.session.add(new_product)
+        self.session.commit()
+        self.session.refresh(new_product)
+        return new_product
+
+    def get_by_id(self, product_id: int) -> Product | None:
+        return self.session.get(Product, product_id)

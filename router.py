@@ -19,3 +19,39 @@ def create_product(
     service: ProductService = Depends(get_product_service),
 ):
     return service.create_product(product_data)
+
+
+@router.get("/", response_model=list[ProductOut])
+def get_products(
+    service: ProductService = Depends(get_product_service),
+    min_price: int | None = Query(default=None, ge=0),
+    max_price: int | None = Query(default=None, ge=0),
+    in_stock: bool | None = None,
+):
+    try:
+        return service.get_products(
+            min_price=min_price,
+            max_price=max_price,
+            in_stock=in_stock,
+        )
+    except ValueError as error:
+        if str(error) == "invalid_price_range":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="min_price must be less than or equal to max_price",
+            ) from error
+        raise
+
+
+@router.get("/{product_id}", response_model=ProductOut)
+def get_product(
+    product_id: int,
+    service: ProductService = Depends(get_product_service),
+):
+    product = service.get_product(product_id)
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+    return product

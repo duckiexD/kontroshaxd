@@ -19,3 +19,14 @@ class ProductCreate(SQLModel):
     @classmethod
     def validate_name(cls, name: str) -> str:
         return strip_and_validate_name(name)
+
+
+class ProductUpdate(SQLModel):
+    name: str = Field(min_length=2, max_length=80)
+    price: int = Field(ge=0)
+    in_stock: bool = True
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, name: str) -> str:
+        return strip_and_validate_name(name)
